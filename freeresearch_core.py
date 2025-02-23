@@ -139,10 +139,10 @@ USE_JINA_SERVICES = True  # If True, attempts to call Jina endpoints, no API key
 # Environment Setup and Configuration
 # -------------------------------------------------------------------
 load_dotenv()
-openai_api_key = os.getenv("OPENAI_API_KEY")
+#openai_api_key = os.getenv("OPENAI_API_KEY")
 gemini_api_key = os.getenv("GEMINI_API_KEY")
-if not openai_api_key:
-    logging.error("OPENAI_API_KEY not set in environment variables.")
+if not gemini_api_key:
+    logging.error("GEMINI_API_KEY not set in environment variables.")
     sys.exit(1)
 
 import google.generativeai as genai
