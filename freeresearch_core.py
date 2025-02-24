@@ -139,11 +139,11 @@ USE_JINA_SERVICES = True  # If True, attempts to call Jina endpoints, no API key
 # Environment Setup and Configuration
 # -------------------------------------------------------------------
 load_dotenv()
-#openai_api_key = os.getenv("OPENAI_API_KEY")
+openai_api_key = os.getenv("OPENAI_API_KEY")
 gemini_api_key = os.getenv("GEMINI_API_KEY")
-if not gemini_api_key:
-    logging.error("GEMINI_API_KEY not set in environment variables.")
-    sys.exit(1)
+if not openai_api_key:
+    logging.error("OPENAI_API_KEY not set in environment variables.")
+    #sys.exit(1)
 
 import google.generativeai as genai
 genai.configure(api_key=gemini_api_key, transport="rest")
@@ -158,7 +158,7 @@ warnings.filterwarnings(
 # Core Utility Functions and Classes
 # -------------------------------------------------------------------
 def get_current_utc_timestamp() -> str:
-    return datetime.datetime.utcnow().isoformat() + "Z"
+    return datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%SZ")
 
 class FilteredStdOut(io.StringIO):
     def write(self, s: str) -> None:
@@ -1434,7 +1434,7 @@ class EnhancedSummarizer(autogen.AssistantAgent):
     def generate_summary(self, research_data: str) -> str:
         system_prompt = (
             "You are an advanced Summarizer that generates comprehensive, PhD-level documents.\n"
-            "Your goal: produce a deep, well-structured summary (≥2000 words) using advanced academic style.\n"
+            "Your goal: produce a deep, well-structured summary (≥10000 words) using advanced academic style.\n"
             "Include citations to relevant sources, highlight key arguments, methodology, findings, and future directions.\n"
             "Organize content with sections, headings, subheadings, and references.\n"
             "Make the summary coherent, addressing the subject's background, current state, and potential expansions.\n"
@@ -1443,7 +1443,7 @@ class EnhancedSummarizer(autogen.AssistantAgent):
             "Some text may be unrelated to the topic due to the scraping precedure(example: Page Navigation Buttons).\n"
             "Finally if you're using text from one of the Jina Deep Search Summaries, \n"
             "when citing please refer to the approriate link within the specific Jina Deep Search Summary Content.\n"
-            "PS: You must write the Summary once, do not output the same summary multiple times, Additionally there should be duplicates on the references section.\n\n"
+            "PS: You must write the Summary once, do not output the same summary multiple times, Additionally there should be no duplicates on the references section.\n\n"
         )
         prompt = system_prompt + "=== RESEARCH DATA ===\n" + research_data + "\n=== END DATA ===\n"
 
@@ -1451,7 +1451,10 @@ class EnhancedSummarizer(autogen.AssistantAgent):
         model_info = self.llm_config.get("config_list", [{}])[0]
         model_name = model_info.get("model", "gemini-2.0-flash-thinking-exp-01-21")
         model = genai.GenerativeModel(model_name=model_name)
-        response = model.generate_content(prompt, generation_config=generation_config)
+        response = model.generate_content(prompt, generation_config=generation_config, stream=True)
+        # Resolve the streaming response to get the full text
+        response.resolve()
+
         return response.text.strip() if response.text else ""
 
 def termination_check(msg):
@@ -1472,12 +1475,11 @@ AssessmentCommander = EnhancedAssessmentCommander(
     llm_config=llm_config_gemini_2_0_pro,
     system_message=(
         "You are an enhanced AssessmentCommander. Review findings using the knowledge "
-        "graph and issue intelligent research commands. You must issue at least three "
-        "separate search commands before indicating that the research is complete. "
+        "graph and issue intelligent research commands to the DeepReseachAgent. You must issue as many commands as possible. "
         "You can only issue one search command at a time in one prompt. "
         "You can choose different levels of breadth and depth for each request, but you must always specify them. "
         "Once satisfied, ONLY output 'TERMINATE_CHAT' and nothing else. "
-        "Do not use terminating string unless the three rounds of commands have been reached"
+        "Do not use terminating string unless DeepResearchAgent explicitly tells you the token limit has been reached."
     ),
     is_termination_msg=termination_check
 )
@@ -1485,7 +1487,7 @@ Summarizer = EnhancedSummarizer(
     name="Summarizer",
     llm_config=llm_config_gemini_2_0_flash_thinking,
     system_message=(
-        "Generate a comprehensive, PhD-level summary. The final document must exceed 2000 words, "
+        "Generate a comprehensive, PhD-level summary. The final document must exceed 10000 words, "
         "include proper academic citations and references, highlight advanced knowledge. "
         "Focus on synthesizing multi-source data, analyzing key topics, and structuring your text logically."
     ),
@@ -1545,7 +1547,7 @@ Start with:
 Research flow:
 1. DeepResearchAgent performs web search with content processing
 2. AssessmentCommander analyzes findings and knowledge graph
-3. Process continues until AssessmentCommander has issued at least three distinct commands
+3. Process continues indefinitely until DeepResearchAgent reaches token limit
 4. A final comprehensive, PhD-level report will be generated
 """
     try:
@@ -1624,4 +1626,3 @@ if __name__ == "__main__":
     except Exception as e:
         logging.error(f"Critical error in main execution: {e}")
         sys.exit(1)
-

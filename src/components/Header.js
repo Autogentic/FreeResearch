@@ -25,7 +25,7 @@ function Header({ toggleTheme, mode, onHelpOpen }) {
               fontWeight: 'bold'
             }}
           >
-            Beta
+            Alpha
           </Box>
         </Typography>
         <FormControlLabel

@@ -1,5 +1,6 @@
 aiohttp==3.11.11
 autogen==0.7.3
+ag2[gemini]==0.7.3
 beautifulsoup4==4.12.3
 cachetools==5.5.0
 crawl4ai==0.4.248
