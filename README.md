@@ -68,9 +68,10 @@ Now you can run start using it from the CLI by just running: python freeresearch
     npm start
     ```
 10. Open the url on a browser:
-  - 0.0.0.0:300
+  - 0.0.0.0:3000
 
 ## Logical Flow
+Note: Now AsessmentCommander issues reseach commands indefinitely until token limit of 920K is reached
 ![pako_eNqtWOtu2zYUfhVCQxAMk1v5GtsICuTSFNncy-ys2Fb3By0d20Ik0SWpJG7TX_u_PcJ-7AH2d8-zF9geYYciKUqOnTTAFCA2z-U7F51zSPqTF7IIvKG3t_dpmhESZ7EckuIrIfvzhF2HS8rlfklD6lKmyYjOIBFIljwHv2SFOb8CpO6nLGOSZfDjvmNGMKd5IseQRcCBK7GILjhURDjNLicrGsbZAtnNIHCsDP2ssTT](https://github.com/user-attachments/assets/4cbc3629-33c7-4645-a35d-d15ef326287a)
 
 ## Disclaimer
